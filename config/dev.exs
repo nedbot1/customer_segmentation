@@ -2,7 +2,7 @@ import Config
 
 # Configure your database
 config :customer_segmentation, CustomerSegmentation.Repo,
-  username: "tobdhen",
+  username: "passang",
   password: "1234",
   hostname: "localhost",
   database: "customer_segmentation_dev",
