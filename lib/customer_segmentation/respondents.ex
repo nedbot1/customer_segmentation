@@ -7,6 +7,11 @@ defmodule CustomerSegmentation.Respondents do
   alias CustomerSegmentation.Repo
 
   alias CustomerSegmentation.Respondents.Respondent
+  alias CustomerSegmentation.Professions.Profession
+  alias CustomerSegmentation.IncomeLevels.IncomeLevel
+  alias CustomerSegmentation.Dzongkhags.Dzongkhag
+  alias Ecto.Multi
+
 
   @doc """
   Returns the list of respondents.
@@ -55,6 +60,25 @@ defmodule CustomerSegmentation.Respondents do
     |> Repo.insert()
   end
 
+  def create_complete_respondent(attrs) do
+    Multi.new()
+    |> Multi.insert(:profession, Profession.changeset(%Profession{}, attrs["profession"]))
+    |> Multi.insert(:income_level, IncomeLevel.changeset(%IncomeLevel{}, attrs["income_level"]))
+    |> Multi.insert(:dzongkhag, Dzongkhag.changeset(%Dzongkhag{}, attrs["dzongkhag"]))
+    |> Multi.run(:respondent, fn repo, %{profession: profession, income_level: income, dzongkhag: dzongkhag} ->
+      respondent_attrs = %{
+        "gender" => attrs["gender"],
+        "age" => attrs["age"],
+        "profession_id" => profession.id,
+        "income_level_id" => income.id,
+        "dzongkhag_id" => dzongkhag.id
+      }
+
+      Respondent.changeset(%Respondent{}, respondent_attrs)
+      |> repo.insert()
+    end)
+    |> Repo.transaction()
+  end
   @doc """
   Updates a respondent.
 
